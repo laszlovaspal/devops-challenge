@@ -3,23 +3,40 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
+
+	"github.com/laszlovaspal/devops-challenge/cloudformationutils"
 )
 
-var (
-	actionFlag    string
-	stackNameFlag string
-)
+var actionFlag = flag.String("action", "list", "create/list/delete CloudFormation stack")
+var stackNameFlag = flag.String("stackName", "cheppers-challenge", "name of CloudFormation stack")
 
-func initFlags() {
-	flag.StringVar(&actionFlag, "action", "list", "create/list/delete CloudFormation stack")
-	flag.StringVar(&stackNameFlag, "stackName", "cheppers-challenge", "name of CloudFormation stack")
-	flag.Parse()
+func handleActionInput() {
+	cfClient := cloudformationutils.CreateNewCloudFormationClient()
+	switch *actionFlag {
+
+	case "events":
+		fmt.Println(cloudformationutils.GetCloudFormationStackEvents(cfClient, *stackNameFlag))
+
+	case "create":
+		template, _ := ioutil.ReadFile("Drupal_Multi_AZ_custom.template")
+		drupalMulitAZTemplate := string(template)
+		fmt.Println(cloudformationutils.CreateNewCloudFormationStack(cfClient,
+			*stackNameFlag, drupalMulitAZTemplate))
+
+	case "delete":
+		fmt.Println(cloudformationutils.DeleteCloudFormationStack(cfClient, *stackNameFlag))
+
+	default:
+		fmt.Println("Unknown action:", *actionFlag)
+	}
 }
 
 func main() {
-	fmt.Println("hello")
-	initFlags()
+	flag.Parse()
 
-	fmt.Println("action ", actionFlag)
-	fmt.Println("stackName", stackNameFlag)
+	fmt.Println("action", *actionFlag)
+	fmt.Println("stackName", *stackNameFlag)
+
+	handleActionInput()
 }
