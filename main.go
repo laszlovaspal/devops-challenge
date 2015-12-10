@@ -4,15 +4,21 @@ import (
 	"flag"
 	"io/ioutil"
 	"log"
+	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/laszlovaspal/devops-challenge/awsutils"
+	"github.com/laszlovaspal/devops-challenge/rest"
 )
 
-var actionFlag = flag.String("action", "list", "create/list/delete CloudFormation stack")
-var stackNameFlag = flag.String("stackName", "cheppers-challenge", "name of CloudFormation stack")
-var restPort = flag.String("restPort", "", "REST API port")
+var (
+	actionFlag    = flag.String("action", "list", "create/list/delete CloudFormation stack")
+	stackNameFlag = flag.String("stackName", "cheppers-challenge", "name of CloudFormation stack")
+	restPort      = flag.Int("restPort", 0, "REST API port")
+)
 
-func handleActionInput() {
+func handleCommandLineArguments() {
 	cfClient := awsutils.CreateNewCloudFormationClient()
 	switch *actionFlag {
 
@@ -37,11 +43,27 @@ func handleActionInput() {
 	}
 }
 
+func handleRESTRequests() {
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/cloudformation/{stackId}/create", rest.HandleCreateCloudformationStackRequest)
+	router.HandleFunc("/cloudformation/{stackId}/events", rest.HandleListCloudformationStackEventsRequest)
+	router.HandleFunc("/cloudformation/{stackId}/delete", rest.HandleDeleteCloudformationStackRequest)
+	router.HandleFunc("/cloudformation/list", rest.HandleListEC2InstancesRequest)
+
+	port := ":" + strconv.Itoa(*restPort)
+	log.Printf("Listening on %s...", port)
+	log.Fatal(http.ListenAndServe(port, router))
+}
+
 func main() {
 	flag.Parse()
 
 	log.Println("action", *actionFlag)
 	log.Println("stackName", *stackNameFlag)
 
-	handleActionInput()
+	if *restPort > 0 {
+		handleRESTRequests()
+	} else {
+		handleCommandLineArguments()
+	}
 }
