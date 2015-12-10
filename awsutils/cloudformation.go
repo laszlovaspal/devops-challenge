@@ -1,4 +1,4 @@
-package cloudformationutils
+package awsutils
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
@@ -6,12 +6,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
-// CreateNewCloudFormationClient asdf
+// CreateNewCloudFormationClient creates new cloudformation client to communicate with AWS
 func CreateNewCloudFormationClient() *cloudformation.CloudFormation {
 	return cloudformation.New(session.New(), &aws.Config{Region: aws.String("us-east-1")})
 }
 
-// CreateNewCloudFormationStack asdf
+// CreateNewCloudFormationStack creates a new cloudformation stack
 func CreateNewCloudFormationStack(
 	cloudFormationClient *cloudformation.CloudFormation,
 	stackName string,
@@ -61,7 +61,7 @@ func CreateNewCloudFormationStack(
 	return cloudFormationClient.CreateStack(params)
 }
 
-// GetCloudFormationStackEvents asdf
+// GetCloudFormationStackEvents lists the events for a cloudformation stack
 func GetCloudFormationStackEvents(
 	cloudFormationClient *cloudformation.CloudFormation,
 	stackName string) ([]*cloudformation.StackEvent, error) {
@@ -76,7 +76,7 @@ func GetCloudFormationStackEvents(
 	return descOutput.StackEvents, nil
 }
 
-// DeleteCloudFormationStack asdf
+// DeleteCloudFormationStack deletes a cloudformation stack
 func DeleteCloudFormationStack(
 	cloudFormationClient *cloudformation.CloudFormation,
 	stackName string) (*cloudformation.DeleteStackOutput, error) {

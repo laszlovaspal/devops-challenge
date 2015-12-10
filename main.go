@@ -5,27 +5,31 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/laszlovaspal/devops-challenge/cloudformationutils"
+	"github.com/laszlovaspal/devops-challenge/awsutils"
 )
 
 var actionFlag = flag.String("action", "list", "create/list/delete CloudFormation stack")
 var stackNameFlag = flag.String("stackName", "cheppers-challenge", "name of CloudFormation stack")
 
 func handleActionInput() {
-	cfClient := cloudformationutils.CreateNewCloudFormationClient()
+	cfClient := awsutils.CreateNewCloudFormationClient()
 	switch *actionFlag {
 
 	case "events":
-		fmt.Println(cloudformationutils.GetCloudFormationStackEvents(cfClient, *stackNameFlag))
+		fmt.Println(awsutils.GetCloudFormationStackEvents(cfClient, *stackNameFlag))
 
 	case "create":
 		template, _ := ioutil.ReadFile("Drupal_Multi_AZ_custom.template")
 		drupalMulitAZTemplate := string(template)
-		fmt.Println(cloudformationutils.CreateNewCloudFormationStack(cfClient,
+		fmt.Println(awsutils.CreateNewCloudFormationStack(cfClient,
 			*stackNameFlag, drupalMulitAZTemplate))
 
 	case "delete":
-		fmt.Println(cloudformationutils.DeleteCloudFormationStack(cfClient, *stackNameFlag))
+		fmt.Println(awsutils.DeleteCloudFormationStack(cfClient, *stackNameFlag))
+
+	case "list":
+		ec2Client := awsutils.CreateNewEC2Client()
+		fmt.Println(awsutils.ListRunningEC2Instances(ec2Client))
 
 	default:
 		fmt.Println("Unknown action:", *actionFlag)
