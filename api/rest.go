@@ -20,10 +20,10 @@ var (
 // StartRestAPI sets up the routing and starts a http server
 func StartRestAPI(restPort int) {
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/cloudformation/{stackId}/create", handleCreateCloudformationStackRequest)
-	router.HandleFunc("/cloudformation/{stackId}/events", handleListCloudformationStackEventsRequest)
-	router.HandleFunc("/cloudformation/{stackId}/delete", handleDeleteCloudformationStackRequest)
-	router.HandleFunc("/cloudformation/list", handleListEC2InstancesRequest)
+	router.HandleFunc("/cloudformation/{stackId}/create", handleCreateCloudformationStackRequest).Methods("POST")
+	router.HandleFunc("/cloudformation/{stackId}/events", handleListCloudformationStackEventsRequest).Methods("GET")
+	router.HandleFunc("/cloudformation/{stackId}/delete", handleDeleteCloudformationStackRequest).Methods("POST")
+	router.HandleFunc("/cloudformation/list", handleListEC2InstancesRequest).Methods("GET")
 
 	port := ":" + strconv.Itoa(restPort)
 	log.Printf("Listening on %s...", port)
@@ -43,29 +43,25 @@ func handleListEC2InstancesRequest(w http.ResponseWriter, request *http.Request)
 
 // handleCreateCloudformationStackRequest creates a cloudformation stack
 func handleCreateCloudformationStackRequest(w http.ResponseWriter, request *http.Request) {
-	if request.Method == "POST" {
-		log.Println("Serving create CloudFormation stack request")
-		vars := mux.Vars(request)
-		response, err := awsutils.CreateNewCloudFormationStack(cfClient,
-			vars["stackId"], drupalMulitAZTemplate)
-		if err != nil {
-			fmt.Fprintln(w, err)
-		}
-		fmt.Fprintln(w, response)
+	log.Println("Serving create CloudFormation stack request")
+	vars := mux.Vars(request)
+	response, err := awsutils.CreateNewCloudFormationStack(cfClient,
+		vars["stackId"], drupalMulitAZTemplate)
+	if err != nil {
+		fmt.Fprintln(w, err)
 	}
+	fmt.Fprintln(w, response)
 }
 
 // handleDeleteCloudformationStackRequest deletes a cloudformation stack
 func handleDeleteCloudformationStackRequest(w http.ResponseWriter, request *http.Request) {
-	if request.Method == "POST" {
-		log.Println("Serving delete CloudFormation stack request")
-		vars := mux.Vars(request)
-		response, err := awsutils.DeleteCloudFormationStack(cfClient, vars["stackId"])
-		if err != nil {
-			fmt.Fprintln(w, err)
-		}
-		fmt.Fprintln(w, response)
+	log.Println("Serving delete CloudFormation stack request")
+	vars := mux.Vars(request)
+	response, err := awsutils.DeleteCloudFormationStack(cfClient, vars["stackId"])
+	if err != nil {
+		fmt.Fprintln(w, err)
 	}
+	fmt.Fprintln(w, response)
 }
 
 // handleListCloudformationStackEventsRequest return a list of cloudformation stack events to the client
