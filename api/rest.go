@@ -1,10 +1,11 @@
-package rest
+package api
 
 import (
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/laszlovaspal/devops-challenge/awsutils"
@@ -16,8 +17,21 @@ var (
 	drupalMulitAZTemplate = string(template)
 )
 
-// HandleListEC2InstancesRequest returns a list of ec2 instances to the client
-func HandleListEC2InstancesRequest(w http.ResponseWriter, request *http.Request) {
+// StartRestAPI sets up the routing and starts a http server
+func StartRestAPI(restPort int) {
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/cloudformation/{stackId}/create", handleCreateCloudformationStackRequest)
+	router.HandleFunc("/cloudformation/{stackId}/events", handleListCloudformationStackEventsRequest)
+	router.HandleFunc("/cloudformation/{stackId}/delete", handleDeleteCloudformationStackRequest)
+	router.HandleFunc("/cloudformation/list", handleListEC2InstancesRequest)
+
+	port := ":" + strconv.Itoa(restPort)
+	log.Printf("Listening on %s...", port)
+	log.Fatal(http.ListenAndServe(port, router))
+}
+
+// handleListEC2InstancesRequest returns a list of ec2 instances to the client
+func handleListEC2InstancesRequest(w http.ResponseWriter, request *http.Request) {
 	log.Println("Serving list EC2 request")
 	ec2Client := awsutils.CreateNewEC2Client()
 	instances, err := awsutils.ListRunningEC2Instances(ec2Client)
@@ -27,8 +41,8 @@ func HandleListEC2InstancesRequest(w http.ResponseWriter, request *http.Request)
 	fmt.Fprintln(w, instances)
 }
 
-// HandleCreateCloudformationStackRequest creates a cloudformation stack
-func HandleCreateCloudformationStackRequest(w http.ResponseWriter, request *http.Request) {
+// handleCreateCloudformationStackRequest creates a cloudformation stack
+func handleCreateCloudformationStackRequest(w http.ResponseWriter, request *http.Request) {
 	if request.Method == "POST" {
 		log.Println("Serving create CloudFormation stack request")
 		vars := mux.Vars(request)
@@ -41,8 +55,8 @@ func HandleCreateCloudformationStackRequest(w http.ResponseWriter, request *http
 	}
 }
 
-// HandleDeleteCloudformationStackRequest deletes a cloudformation stack
-func HandleDeleteCloudformationStackRequest(w http.ResponseWriter, request *http.Request) {
+// handleDeleteCloudformationStackRequest deletes a cloudformation stack
+func handleDeleteCloudformationStackRequest(w http.ResponseWriter, request *http.Request) {
 	if request.Method == "POST" {
 		log.Println("Serving delete CloudFormation stack request")
 		vars := mux.Vars(request)
@@ -54,8 +68,8 @@ func HandleDeleteCloudformationStackRequest(w http.ResponseWriter, request *http
 	}
 }
 
-// HandleListCloudformationStackEventsRequest return a list of cloudformation stack events to the client
-func HandleListCloudformationStackEventsRequest(w http.ResponseWriter, request *http.Request) {
+// handleListCloudformationStackEventsRequest return a list of cloudformation stack events to the client
+func handleListCloudformationStackEventsRequest(w http.ResponseWriter, request *http.Request) {
 	log.Println("Serving list CloudFormation events request")
 	vars := mux.Vars(request)
 	response, err := awsutils.GetCloudFormationStackEvents(cfClient, vars["stackId"])
