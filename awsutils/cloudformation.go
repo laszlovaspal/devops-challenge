@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
+var cloudFormationClient = CreateNewCloudFormationClient()
+
 // CreateNewCloudFormationClient creates new cloudformation client to communicate with AWS
 func CreateNewCloudFormationClient() *cloudformation.CloudFormation {
 	return cloudformation.New(session.New(), &aws.Config{Region: aws.String("us-east-1")})
@@ -18,7 +20,6 @@ func CreateNewCloudFormationClient() *cloudformation.CloudFormation {
 
 // CreateNewCloudFormationStack creates a new cloudformation stack
 func CreateNewCloudFormationStack(
-	cloudFormationClient *cloudformation.CloudFormation,
 	stackName string,
 	cloudFormationTemplate string) (*cloudformation.CreateStackOutput, error) {
 
@@ -67,9 +68,7 @@ func CreateNewCloudFormationStack(
 }
 
 // GetCloudFormationStackEvents lists the events for a cloudformation stack
-func GetCloudFormationStackEvents(
-	cloudFormationClient *cloudformation.CloudFormation,
-	stackName string) ([]*cloudformation.StackEvent, error) {
+func GetCloudFormationStackEvents(stackName string) ([]*cloudformation.StackEvent, error) {
 
 	descInput := &cloudformation.DescribeStackEventsInput{
 		StackName: aws.String(stackName),
@@ -82,9 +81,7 @@ func GetCloudFormationStackEvents(
 }
 
 // DeleteCloudFormationStack deletes a cloudformation stack
-func DeleteCloudFormationStack(
-	cloudFormationClient *cloudformation.CloudFormation,
-	stackName string) (*cloudformation.DeleteStackOutput, error) {
+func DeleteCloudFormationStack(stackName string) (*cloudformation.DeleteStackOutput, error) {
 
 	delInput := &cloudformation.DeleteStackInput{
 		StackName: aws.String(stackName),
@@ -92,10 +89,8 @@ func DeleteCloudFormationStack(
 	return cloudFormationClient.DeleteStack(delInput)
 }
 
-// GetUrlOfCreatedStack returns the URL of the stack
-func GetUrlOfCreatedStack(
-	cloudFormationClient *cloudformation.CloudFormation,
-	stackName string) (string, error) {
+// GetURLOfCreatedStack returns the URL of the stack
+func GetURLOfCreatedStack(stackName string) (string, error) {
 
 	descInput := &cloudformation.DescribeStacksInput{
 		StackName: aws.String(stackName),
@@ -113,11 +108,10 @@ func GetUrlOfCreatedStack(
 	return "", errors.New("Couldn't find URL for stack: " + stackName)
 }
 
-func IsDrupalRunningOnStack(
-	cloudFormationClient *cloudformation.CloudFormation,
-	stackName string) (bool, error) {
+// IsDrupalRunningOnStack check whether the installed Drupal site is available on the stack
+func IsDrupalRunningOnStack(stackName string) (bool, error) {
 
-	url, err := GetUrlOfCreatedStack(cloudFormationClient, stackName)
+	url, err := GetURLOfCreatedStack(stackName)
 	if err != nil {
 		return false, err
 	}

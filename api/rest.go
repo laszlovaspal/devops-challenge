@@ -12,8 +12,6 @@ import (
 )
 
 var (
-	cfClient              = awsutils.CreateNewCloudFormationClient()
-	ec2Client             = awsutils.CreateNewEC2Client()
 	template, _           = ioutil.ReadFile("MultiAZ2.template")
 	drupalMulitAZTemplate = string(template)
 )
@@ -37,7 +35,7 @@ func StartRestAPI(restPort int) {
 func handleListEC2InstancesRequest(w http.ResponseWriter, request *http.Request) {
 	log.Println("Serving list EC2 request")
 
-	instances, err := awsutils.ListRunningEC2Instances(ec2Client)
+	instances, err := awsutils.ListRunningEC2Instances()
 	if err != nil {
 		fmt.Fprintln(w, err)
 	}
@@ -48,8 +46,7 @@ func handleListEC2InstancesRequest(w http.ResponseWriter, request *http.Request)
 func handleCreateCloudformationStackRequest(w http.ResponseWriter, request *http.Request) {
 	log.Println("Serving create CloudFormation stack request")
 	vars := mux.Vars(request)
-	response, err := awsutils.CreateNewCloudFormationStack(cfClient,
-		vars["stackId"], drupalMulitAZTemplate)
+	response, err := awsutils.CreateNewCloudFormationStack(vars["stackId"], drupalMulitAZTemplate)
 	if err != nil {
 		fmt.Fprintln(w, err)
 	}
@@ -60,7 +57,7 @@ func handleCreateCloudformationStackRequest(w http.ResponseWriter, request *http
 func handleCheckDrupalOnStackRequest(w http.ResponseWriter, request *http.Request) {
 	log.Println("Serving check Drupal on CloudFormation stack request")
 	vars := mux.Vars(request)
-	isRunning, err := awsutils.IsDrupalRunningOnStack(cfClient, vars["stackId"])
+	isRunning, err := awsutils.IsDrupalRunningOnStack(vars["stackId"])
 	if err != nil {
 		fmt.Fprintln(w, err)
 	}
@@ -71,7 +68,7 @@ func handleCheckDrupalOnStackRequest(w http.ResponseWriter, request *http.Reques
 func handleDeleteCloudformationStackRequest(w http.ResponseWriter, request *http.Request) {
 	log.Println("Serving delete CloudFormation stack request")
 	vars := mux.Vars(request)
-	response, err := awsutils.DeleteCloudFormationStack(cfClient, vars["stackId"])
+	response, err := awsutils.DeleteCloudFormationStack(vars["stackId"])
 	if err != nil {
 		fmt.Fprintln(w, err)
 	}
@@ -81,7 +78,7 @@ func handleDeleteCloudformationStackRequest(w http.ResponseWriter, request *http
 // handleSimulateOutageOnCloudformationStackRequest simulates an outage on a cloudformation stack by terminating an instance
 func handleSimulateOutageOnCloudformationStackRequest(w http.ResponseWriter, request *http.Request) {
 	log.Println("Serving simulate outage on CloudFormation stack request")
-	awsutils.SimulateOutage(ec2Client)
+	awsutils.SimulateOutage()
 	fmt.Fprintln(w, "Simulating outage")
 }
 
@@ -89,7 +86,7 @@ func handleSimulateOutageOnCloudformationStackRequest(w http.ResponseWriter, req
 func handleListCloudformationStackEventsRequest(w http.ResponseWriter, request *http.Request) {
 	log.Println("Serving list CloudFormation events request")
 	vars := mux.Vars(request)
-	response, err := awsutils.GetCloudFormationStackEvents(cfClient, vars["stackId"])
+	response, err := awsutils.GetCloudFormationStackEvents(vars["stackId"])
 	if err != nil {
 		fmt.Fprintln(w, err)
 	}

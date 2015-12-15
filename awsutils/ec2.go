@@ -8,13 +8,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
+var ec2Client = CreateNewEC2Client()
+
 // CreateNewEC2Client creates an ec2 client to communicate with AWS
 func CreateNewEC2Client() *ec2.EC2 {
 	return ec2.New(session.New(), &aws.Config{Region: aws.String("us-east-1")})
 }
 
 // ListRunningEC2Instances lists running ec2 instances
-func ListRunningEC2Instances(ec2Client *ec2.EC2) (*ec2.DescribeInstancesOutput, error) {
+func ListRunningEC2Instances() (*ec2.DescribeInstancesOutput, error) {
 	params := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
 			{
@@ -30,7 +32,7 @@ func ListRunningEC2Instances(ec2Client *ec2.EC2) (*ec2.DescribeInstancesOutput, 
 }
 
 // TerminateRunningEC2Instance terminates an EC2 instance by instanceID
-func TerminateRunningEC2Instance(ec2Client *ec2.EC2, instanceID string) (*ec2.TerminateInstancesOutput, error) {
+func TerminateRunningEC2Instance(instanceID string) (*ec2.TerminateInstancesOutput, error) {
 	params := &ec2.TerminateInstancesInput{
 		InstanceIds: []*string{
 			aws.String(instanceID),
@@ -40,8 +42,8 @@ func TerminateRunningEC2Instance(ec2Client *ec2.EC2, instanceID string) (*ec2.Te
 }
 
 // SimulateOutage simulates outage by terminating an EC2 instance
-func SimulateOutage(ec2Client *ec2.EC2) {
-	descOutput, err := ListRunningEC2Instances(ec2Client)
+func SimulateOutage() {
+	descOutput, err := ListRunningEC2Instances()
 	if err != nil {
 		log.Println(err)
 		return
@@ -49,7 +51,7 @@ func SimulateOutage(ec2Client *ec2.EC2) {
 
 	for _, reservation := range descOutput.Reservations {
 		for _, instance := range reservation.Instances {
-			TerminateRunningEC2Instance(ec2Client, *instance.InstanceId)
+			TerminateRunningEC2Instance(*instance.InstanceId)
 
 			// return after terminating the first one
 			return
