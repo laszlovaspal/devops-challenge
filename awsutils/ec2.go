@@ -1,6 +1,8 @@
 package awsutils
 
 import (
+	"log"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -25,4 +27,32 @@ func ListRunningEC2Instances(ec2Client *ec2.EC2) (*ec2.DescribeInstancesOutput, 
 		},
 	}
 	return ec2Client.DescribeInstances(params)
+}
+
+// TerminateRunningEC2Instance terminates an EC2 instance by instanceID
+func TerminateRunningEC2Instance(ec2Client *ec2.EC2, instanceID string) (*ec2.TerminateInstancesOutput, error) {
+	params := &ec2.TerminateInstancesInput{
+		InstanceIds: []*string{
+			aws.String(instanceID),
+		},
+	}
+	return ec2Client.TerminateInstances(params)
+}
+
+// SimulateOutage simulates outage by terminating an EC2 instance
+func SimulateOutage(ec2Client *ec2.EC2) {
+	descOutput, err := ListRunningEC2Instances(ec2Client)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	for _, reservation := range descOutput.Reservations {
+		for _, instance := range reservation.Instances {
+			TerminateRunningEC2Instance(ec2Client, *instance.InstanceId)
+
+			// return after terminating the first one
+			return
+		}
+	}
 }

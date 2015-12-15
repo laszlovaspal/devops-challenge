@@ -13,6 +13,7 @@ import (
 
 var (
 	cfClient              = awsutils.CreateNewCloudFormationClient()
+	ec2Client             = awsutils.CreateNewEC2Client()
 	template, _           = ioutil.ReadFile("MultiAZ2.template")
 	drupalMulitAZTemplate = string(template)
 )
@@ -24,6 +25,7 @@ func StartRestAPI(restPort int) {
 	router.HandleFunc("/cloudformation/{stackId}/events", handleListCloudformationStackEventsRequest).Methods("GET")
 	router.HandleFunc("/cloudformation/{stackId}/check", handleCheckDrupalOnStackRequest).Methods("GET")
 	router.HandleFunc("/cloudformation/{stackId}/delete", handleDeleteCloudformationStackRequest).Methods("POST")
+	router.HandleFunc("/cloudformation/simulateOutage", handleSimulateOutageOnCloudformationStackRequest).Methods("POST")
 	router.HandleFunc("/cloudformation/list", handleListEC2InstancesRequest).Methods("GET")
 
 	port := ":" + strconv.Itoa(restPort)
@@ -34,7 +36,7 @@ func StartRestAPI(restPort int) {
 // handleListEC2InstancesRequest returns a list of ec2 instances to the client
 func handleListEC2InstancesRequest(w http.ResponseWriter, request *http.Request) {
 	log.Println("Serving list EC2 request")
-	ec2Client := awsutils.CreateNewEC2Client()
+
 	instances, err := awsutils.ListRunningEC2Instances(ec2Client)
 	if err != nil {
 		fmt.Fprintln(w, err)
@@ -74,6 +76,13 @@ func handleDeleteCloudformationStackRequest(w http.ResponseWriter, request *http
 		fmt.Fprintln(w, err)
 	}
 	fmt.Fprintln(w, response)
+}
+
+// handleSimulateOutageOnCloudformationStackRequest simulates an outage on a cloudformation stack by terminating an instance
+func handleSimulateOutageOnCloudformationStackRequest(w http.ResponseWriter, request *http.Request) {
+	log.Println("Serving simulate outage on CloudFormation stack request")
+	awsutils.SimulateOutage(ec2Client)
+	fmt.Fprintln(w, "Simulating outage")
 }
 
 // handleListCloudformationStackEventsRequest return a list of cloudformation stack events to the client

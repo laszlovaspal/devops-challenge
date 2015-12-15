@@ -10,6 +10,8 @@ import (
 // HandleCommandLineArguments takes care of command line arguments
 func HandleCommandLineArguments(actionFlag string, stackNameFlag string) {
 	cfClient := awsutils.CreateNewCloudFormationClient()
+	ec2Client := awsutils.CreateNewEC2Client()
+
 	switch actionFlag {
 
 	case "events":
@@ -25,7 +27,6 @@ func HandleCommandLineArguments(actionFlag string, stackNameFlag string) {
 		log.Println(awsutils.DeleteCloudFormationStack(cfClient, stackNameFlag))
 
 	case "list":
-		ec2Client := awsutils.CreateNewEC2Client()
 		log.Println(awsutils.ListRunningEC2Instances(ec2Client))
 
 	case "check":
@@ -34,6 +35,9 @@ func HandleCommandLineArguments(actionFlag string, stackNameFlag string) {
 			log.Fatal(err)
 		}
 		log.Println(isRunning)
+
+	case "simulateOutage":
+		awsutils.SimulateOutage(ec2Client)
 
 	default:
 		log.Println("Unknown action:", actionFlag)
