@@ -56,7 +56,7 @@ func CreateNewCloudFormationStack(
 			},
 		},
 		TemplateBody:     aws.String(cloudFormationTemplate),
-		TimeoutInMinutes: aws.Int64(30),
+		TimeoutInMinutes: aws.Int64(60),
 	}
 	return cloudFormationClient.CreateStack(params)
 }

@@ -13,7 +13,7 @@ import (
 
 var (
 	cfClient              = awsutils.CreateNewCloudFormationClient()
-	template, _           = ioutil.ReadFile("Drupal_Multi_AZ_custom.template")
+	template, _           = ioutil.ReadFile("MultiAZ2.template")
 	drupalMulitAZTemplate = string(template)
 )
 

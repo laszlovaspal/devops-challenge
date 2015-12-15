@@ -16,7 +16,7 @@ func HandleCommandLineArguments(actionFlag string, stackNameFlag string) {
 		log.Println(awsutils.GetCloudFormationStackEvents(cfClient, stackNameFlag))
 
 	case "create":
-		template, _ := ioutil.ReadFile("Drupal_Multi_AZ_custom.template")
+		template, _ := ioutil.ReadFile("MultiAZ2.template")
 		drupalMulitAZTemplate := string(template)
 		log.Println(awsutils.CreateNewCloudFormationStack(cfClient,
 			stackNameFlag, drupalMulitAZTemplate))
