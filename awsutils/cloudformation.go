@@ -1,6 +1,11 @@
 package awsutils
 
 import (
+	"errors"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -85,4 +90,48 @@ func DeleteCloudFormationStack(
 		StackName: aws.String(stackName),
 	}
 	return cloudFormationClient.DeleteStack(delInput)
+}
+
+// GetUrlOfCreatedStack returns the URL of the stack
+func GetUrlOfCreatedStack(
+	cloudFormationClient *cloudformation.CloudFormation,
+	stackName string) (string, error) {
+
+	descInput := &cloudformation.DescribeStacksInput{
+		StackName: aws.String(stackName),
+	}
+	descOutput, err := cloudFormationClient.DescribeStacks(descInput)
+	if err != nil {
+		return "", err
+	}
+
+	for _, stack := range descOutput.Stacks {
+		for _, output := range stack.Outputs {
+			return *output.OutputValue, nil
+		}
+	}
+	return "", errors.New("Couldn't find URL for stack: " + stackName)
+}
+
+func IsDrupalRunningOnStack(
+	cloudFormationClient *cloudformation.CloudFormation,
+	stackName string) (bool, error) {
+
+	url, err := GetUrlOfCreatedStack(cloudFormationClient, stackName)
+	if err != nil {
+		return false, err
+	}
+
+	response, err := http.Get(url)
+	if err != nil {
+		return false, err
+	}
+	defer response.Body.Close()
+
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return false, err
+	}
+
+	return strings.Contains(string(responseBody), "Drupal"), nil
 }

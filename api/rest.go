@@ -22,6 +22,7 @@ func StartRestAPI(restPort int) {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/cloudformation/{stackId}/create", handleCreateCloudformationStackRequest).Methods("POST")
 	router.HandleFunc("/cloudformation/{stackId}/events", handleListCloudformationStackEventsRequest).Methods("GET")
+	router.HandleFunc("/cloudformation/{stackId}/check", handleCheckDrupalOnStackRequest).Methods("GET")
 	router.HandleFunc("/cloudformation/{stackId}/delete", handleDeleteCloudformationStackRequest).Methods("POST")
 	router.HandleFunc("/cloudformation/list", handleListEC2InstancesRequest).Methods("GET")
 
@@ -51,6 +52,17 @@ func handleCreateCloudformationStackRequest(w http.ResponseWriter, request *http
 		fmt.Fprintln(w, err)
 	}
 	fmt.Fprintln(w, response)
+}
+
+// handleCheckDrupalOnStackRequest checks whether Drupal is running on a cloudformation stack
+func handleCheckDrupalOnStackRequest(w http.ResponseWriter, request *http.Request) {
+	log.Println("Serving check Drupal on CloudFormation stack request")
+	vars := mux.Vars(request)
+	isRunning, err := awsutils.IsDrupalRunningOnStack(cfClient, vars["stackId"])
+	if err != nil {
+		fmt.Fprintln(w, err)
+	}
+	fmt.Fprintln(w, isRunning)
 }
 
 // handleDeleteCloudformationStackRequest deletes a cloudformation stack

@@ -28,6 +28,13 @@ func HandleCommandLineArguments(actionFlag string, stackNameFlag string) {
 		ec2Client := awsutils.CreateNewEC2Client()
 		log.Println(awsutils.ListRunningEC2Instances(ec2Client))
 
+	case "check":
+		isRunning, err := awsutils.IsDrupalRunningOnStack(cfClient, stackNameFlag)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(isRunning)
+
 	default:
 		log.Println("Unknown action:", actionFlag)
 	}
