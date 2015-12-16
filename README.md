@@ -10,8 +10,8 @@ What it does:
   - Uses Amazon RDS MySQL for Database
   - Provides command line arguments and a REST API for creating the above mentioned CloudFormation stack, listing the running instances, and deleting the stack
 
-How to build
------------
+Build
+-----
 
 With a set `$GOPATH` environment
 
@@ -85,3 +85,17 @@ To check whether Drupal is available on the stack
 To simulate outage by terminating an EC2 instance in the stack
 
     $ curl -X POST http://localhost:8080/cloudformation/simulateOutage
+
+Build with Docker
+-----------------
+
+To build a Docker image containing the application:
+
+    $ docker build -t devops-challenge .
+
+Example usage
+-------------
+
+Similar as above, with the difference of running the devops-challenge binary from the Docker container:
+
+    docker run --env-file aws_credentials.env devops-challenge -action list
