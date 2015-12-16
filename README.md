@@ -13,10 +13,11 @@ What it does:
 How to build
 -----------
 
-With a set $GOPATH environment
+With a set `$GOPATH` environment
 
+    $ export GO15VENDOREXPERIMENT=1
     $ go get github.com/laszlovaspal/devops-challenge
-    $ go install
+    $ go install laszlovaspal/devops-challenge
 
 Example usage
 -------------
@@ -37,6 +38,14 @@ To list running or pending EC2 instances:
 
     $ devops-challenge -action=list -stackName=examplestack
 
+To check whether Drupal is available on the stack
+
+    $ devops-challenge -action=check -stackName=examplestack
+
+To simulate outage by terminating an EC2 instance in the stack
+
+    $ devops-challenge -action=simulateOutage
+
 REST API
 --------
 
@@ -48,5 +57,31 @@ Endpoints:
 
     http://localhost:8080/cloudformation/{stackId}/create
     http://localhost:8080/cloudformation/{stackId}/events
+    http://localhost:8080/cloudformation/{stackId}/check
     http://localhost:8080/cloudformation/{stackId}/delete
+    http://localhost:8080/cloudformation/simulateOutage
     http://localhost:8080/cloudformation/list
+
+To create a new CloudFormation stack:
+
+    $ curl -X POST http://localhost:8080/cloudformation/examplestack/create
+
+To delete a CloudFormation stack:
+
+    $ curl -X POST http://localhost:8080/cloudformation/examplestack/delete
+
+To list CloudFormation stack events:
+
+    $ curl -X GET http://localhost:8080/cloudformation/examplestack/events
+
+To list running or pending EC2 instances:
+
+    $ curl -X GET http://localhost:8080/cloudformation/list
+
+To check whether Drupal is available on the stack
+
+    $ curl -X GET http://localhost:8080/cloudformation/examplestack/check
+
+To simulate outage by terminating an EC2 instance in the stack
+
+    $ curl -X POST http://localhost:8080/cloudformation/simulateOutage

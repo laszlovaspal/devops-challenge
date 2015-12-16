@@ -3,6 +3,7 @@ package awsutils
 import (
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
@@ -102,6 +103,7 @@ func GetURLOfCreatedStack(stackName string) (string, error) {
 
 	for _, stack := range descOutput.Stacks {
 		for _, output := range stack.Outputs {
+			log.Println("URL of stack", *output.OutputValue)
 			return *output.OutputValue, nil
 		}
 	}

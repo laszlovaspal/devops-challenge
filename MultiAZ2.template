@@ -283,8 +283,8 @@
           "config" : {
 
             "sources" : {
-              "/var/www/html"       : "http://ftp.drupal.org/files/projects/drupal-7.8.tar.gz",
-              "/home/ec2-user"      : "http://ftp.drupal.org/files/projects/drush-7.x-4.5.tar.gz"
+              "/var/www/html"       : "http://ftp.drupal.org/files/projects/drupal-7.41.tar.gz",
+              "/home/ec2-user"      : "http://ftp.drupal.org/files/projects/drush-7.x-5.9.tar.gz"
             },
 
             "files" : {

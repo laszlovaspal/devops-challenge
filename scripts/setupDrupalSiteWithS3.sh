@@ -1,7 +1,7 @@
 # Move the website files to the top level
-mv /var/www/html/drupal-7.8/* /var/www/html
-mv /var/www/html/drupal-7.8/.htaccess /var/www/html
-rm -Rf /var/www/html/drupal-7.8
+mv /var/www/html/drupal-7.41/* /var/www/html
+mv /var/www/html/drupal-7.41/.htaccess /var/www/html
+rm -Rf /var/www/html/drupal-7.41
 
 # Mount the S3 bucket
 mv /var/www/html/sites/default/files /var/www/html/sites/default/files_original
